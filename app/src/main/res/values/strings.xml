@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Pratica5</string>
+    <string-array name="categories">
+        <item>Restaurante</item>
+        <item>Bar</item>
+        <item>Cinema</item>
+        <item>Universidade</item>
+        <item>Estádio</item>
+        <item>Parque</item>
+        <item>Outros</item>
+    </string-array>
+</resources>
