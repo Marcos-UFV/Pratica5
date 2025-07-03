@@ -1,30 +1,96 @@
 package br.ufv.dpi.inf311.pratica5;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 
-public class MainActivity extends AppCompatActivity {
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 
+public class MainActivity extends AppCompatActivity implements LocationListener {
+    private static final int FINE_PERMISSION_CODE = 12;
+    private LocationManager lm;
+    private Criteria criteria;
+    private String provider;
+    private TextView latTextView;
+    private TextView longTextView;
+    Location currentLocation;
+    BancoDados bd;
+    private List<String> categorias;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        latTextView = findViewById(R.id.latitude);
+        longTextView = findViewById(R.id.longitude);
+        bd = BancoDados.getInstance();
+        criaCategorias();
 
+        criteria = new Criteria();
+        PackageManager packageManager = getPackageManager();
+        boolean hasGPS = packageManager.hasSystemFeature(PackageManager.FEATURE_LOCATION_GPS);
+        if(hasGPS){
+            criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        }else{
+            criteria.setAccuracy(Criteria.ACCURACY_COARSE);
+        }
+    }
+    private void criaCategorias(){
+        Cursor c = bd.buscar("Categoria",new String[]{"nome"},"","");
+        categorias = new ArrayList<>();
+        while(c.moveToNext()){
+            int nome = c.getColumnIndex("nome");
+            categorias.add(c.getString(nome));
+        }
+        Log.i("LOCATION","Nº de categorias: "+categorias.size());
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        requestLocationPermission();
+        provider = lm.getBestProvider(criteria,true);
+        if(provider != null){
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            lm.requestLocationUpdates(provider,5000,0,this);
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        String[] categories = getResources().getStringArray(R.array.categories);
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, R.layout.dropdown_item, categories);
+
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, R.layout.dropdown_item, categorias);
         MaterialAutoCompleteTextView autoCompleteTextView = findViewById(R.id.autoCompleteView);
         autoCompleteTextView.setAdapter(arrayAdapter);
     }
@@ -54,5 +120,50 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onLocationChanged(@NonNull Location location) {
+        currentLocation = location;
+        double latitude = location.getLatitude();
+        double longitude = location.getLongitude();
+
+        DecimalFormat df = new DecimalFormat("0.#######");
+        latTextView.setText(df.format(latitude));
+        longTextView.setText(df.format(longitude));
+
+        Log.i("LOCATION","Latitude: "+latitude+" Longitude: "+longitude);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults, int deviceId) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults, deviceId);
+        switch (requestCode){
+            case FINE_PERMISSION_CODE:
+                if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                    updateCurrentLocation();
+                }
+        }
+    }
+    public void requestLocationPermission(){
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if(ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.ACCESS_FINE_LOCATION) || ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.ACCESS_COARSE_LOCATION)){
+                ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION},FINE_PERMISSION_CODE);
+            }else{
+                ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION},FINE_PERMISSION_CODE);
+            }
+        }else{
+            updateCurrentLocation();
+        }
+    }
+    private void updateCurrentLocation(){
+        if(currentLocation != null){
+            double latitude = currentLocation.getLatitude();
+            double longitude = currentLocation.getLongitude();
+
+            DecimalFormat df = new DecimalFormat("0.#######");
+            latTextView.setText(df.format(latitude));
+            longTextView.setText(df.format(longitude));
+        }
     }
 }
