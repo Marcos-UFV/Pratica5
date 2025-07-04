@@ -203,8 +203,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
         if(id == R.id.item1){
-            Intent intent = new Intent(this, MapaActivity.class);
-            startActivity(intent);
+            if(currentLocation != null){
+                Intent intent = new Intent(this, MapaActivity.class);
+                intent.putExtra("latitude",currentLocation.getLatitude());
+                intent.putExtra("longitude",currentLocation.getLongitude());
+                startActivity(intent);
+            }else{
+                Toast.makeText(getContext(),"Aguarde a definição da localização",Toast.LENGTH_LONG).show();
+            }
         }
 
         if(id == R.id.item2){
@@ -266,5 +272,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }
     private Context getContext(){
         return this;
+    }
+
+    @Override
+    protected void onDestroy() {
+        lm.removeUpdates(this);
+        super.onDestroy();
     }
 }
