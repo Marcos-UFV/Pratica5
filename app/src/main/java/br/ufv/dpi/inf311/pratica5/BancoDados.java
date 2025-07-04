@@ -59,6 +59,11 @@ public class BancoDados {
         Log.i("BANCO_DADOS", "Cadastrou registro com o id [" + id + "]");
         return id;
     }
+    public int atualizar(String tabela, ContentValues valores, String where) {
+        int count = db.update(tabela, valores, where, null);
+        Log.i("BANCO_DADOS", "Atualizou [" + count + "] registros");
+        return count;
+    }
     public void abrir() {
         Context ctx = MyApp.getAppContext();
         db = ctx.openOrCreateDatabase(NOME_BANCO, Context.MODE_PRIVATE, null);
