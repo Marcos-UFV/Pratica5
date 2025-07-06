@@ -62,7 +62,7 @@ public class BancoDados {
     }
     public List<Local> getTodosLocaisVisitados(){
         List<Local> locaisVisitados = new ArrayList<>();
-        Cursor c = INSTANCE.buscar("Checkin",new String[]{"Local","qtdVisitas","cat","latitude","longitude"},"","");
+        Cursor c = INSTANCE.buscar("Checkin",new String[]{"Local","qtdVisitas","cat","latitude","longitude"},"","qtdVisitas desc");
         while(c.moveToNext()){
             int local = c.getColumnIndex("Local");
             int qtd = c.getColumnIndex("qtdVisitas");
