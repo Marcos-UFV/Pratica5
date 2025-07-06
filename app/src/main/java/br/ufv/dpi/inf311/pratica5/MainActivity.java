@@ -88,21 +88,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }
     private void criaLocaisVisitados(){
         locaisVisitados = new HashSet<>();
-        Cursor c = bd.buscar("Checkin",new String[]{"Local","qtdVisitas","cat","latitude","longitude"},"","");
-
-        while(c.moveToNext()){
-            int local = c.getColumnIndex("Local");
-            int qtd = c.getColumnIndex("qtdVisitas");
-            int latitude = c.getColumnIndex("latitude");
-            int longitude = c.getColumnIndex("longitude");
-            int cat = c.getColumnIndex("cat");
-            Categoria categoria = categorias.get(c.getInt(cat));
-            Local l = new Local(c.getString(local), c.getInt(qtd), c.getString(latitude), c.getString(longitude),categoria);
-            locaisVisitados.add(l);
-            String msg = String.format("Local: "+l);
-            Log.i("LOCATION",msg);
-        }
-        Log.i("LOCATION","Nº de loacais visitados: "+locaisVisitados.size());
+        List<Local> todosLocaisVisitados = bd.getTodosLocaisVisitados();
+        locaisVisitados.addAll(todosLocaisVisitados);
     }
 
     private void criaCategorias(){
@@ -134,9 +121,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 locationCallback,
                 Looper.getMainLooper());
     }
-    private void startLocationUpdates() {
 
-    }
     private void updateLocationOnView(Location location){
         currentLocation = location;
         double latitude = location.getLatitude();

@@ -43,21 +43,7 @@ public class MapaActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapFragment.getMapAsync(this);
     }
     private void criaLocaisVisitados(){
-        Cursor c = bd.buscar("Checkin c, Categoria ca", new String[]{"c.Local local", "c.qtdVisitas visitas", "c.latitude latitude", "c.longitude longitude", "ca.idCategoria idCategoria", "ca.nome nomeCategoria"}, "c.cat = ca.idCategoria", null);
-        locaisVisitados = new ArrayList<>();
-        while(c.moveToNext()){
-            int local = c.getColumnIndex("local");
-            int qtd = c.getColumnIndex("visitas");
-            int latitude = c.getColumnIndex("latitude");
-            int longitude = c.getColumnIndex("longitude");
-
-            int id = c.getColumnIndex("idCategoria");
-            int nome = c.getColumnIndex("nomeCategoria");
-            Categoria categoria = new Categoria(c.getInt(id), c.getString(nome));
-            Local l = new Local(c.getString(local), c.getInt(qtd), c.getString(latitude), c.getString(longitude), categoria);
-            locaisVisitados.add(l);
-            Log.i("MAP","Categoria buscada - ID: "+c.getInt(id)+"Nome: "+c.getString(nome));
-        }
+        locaisVisitados = bd.getTodosLocaisVisitadosComCategorias();
     }
     @Override
     protected void onStart() {
