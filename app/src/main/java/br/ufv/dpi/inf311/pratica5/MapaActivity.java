@@ -32,6 +32,8 @@ public class MapaActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mapa);
+        if(getSupportActionBar() != null)
+            getSupportActionBar().setTitle(R.string.tela_mapa);
         bd = BancoDados.getInstance();
         criaLocaisVisitados();
         Intent intent = getIntent();

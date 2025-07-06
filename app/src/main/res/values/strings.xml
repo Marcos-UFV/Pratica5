@@ -1,14 +1,7 @@
 <resources>
     <string name="app_name">Pratica5</string>
-    <string-array name="categories">
-        <item>Restaurante</item>
-        <item>Bar</item>
-        <item>Cinema</item>
-        <item>Universidade</item>
-        <item>Estádio</item>
-        <item>Parque</item>
-        <item>Outros</item>
-    </string-array>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="tela_checkin">CheckIn Locais</string>
+    <string name="tela_mapa">Mapa Checkin</string>
+    <string name="tela_gestao">Gestao de Checkin</string>
+    <string name="tela_relatorio">Relatório</string>
 </resources>

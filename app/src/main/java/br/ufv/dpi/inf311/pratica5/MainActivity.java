@@ -68,6 +68,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        if(getSupportActionBar() != null)
+            getSupportActionBar().setTitle(R.string.tela_checkin);
+
         latTextView = findViewById(R.id.latitude);
         longTextView = findViewById(R.id.longitude);
         btnCheckIn = findViewById(R.id.btnCheckIn);

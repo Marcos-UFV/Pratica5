@@ -26,6 +26,9 @@ public class RelatorioActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_relatorio);
+        if(getSupportActionBar() != null)
+            getSupportActionBar().setTitle(R.string.tela_relatorio);
+
         bd = BancoDados.getInstance();
         List<Local> locaisVisitados = bd.getTodosLocaisVisitados();
         ListView listView = findViewById(R.id.list_view);

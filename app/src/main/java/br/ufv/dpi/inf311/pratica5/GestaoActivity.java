@@ -35,6 +35,9 @@ public class GestaoActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gestao);
+        if(getSupportActionBar() != null)
+            getSupportActionBar().setTitle(R.string.tela_gestao);
+
         bd = BancoDados.getInstance();
         recyclerView = (RecyclerView) findViewById(R.id.recycleView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
