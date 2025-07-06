@@ -12,6 +12,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,6 +25,13 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationAvailability;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 
@@ -42,9 +50,6 @@ import br.ufv.dpi.inf311.pratica5.model.Local;
 
 public class MainActivity extends AppCompatActivity implements LocationListener {
     private static final int FINE_PERMISSION_CODE = 12;
-    private LocationManager lm;
-    private Criteria criteria;
-    private String provider;
     private TextView latTextView;
     private TextView longTextView;
     Location currentLocation;
@@ -54,31 +59,35 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     private MaterialAutoCompleteTextView autoCompleteTextView;
     private Set<Local> locaisVisitados;
     private MaterialButton btnCheckIn;
+    // Location request is a config file for all settings related to FusedLocationProviderClient
+    LocationRequest locationRequest;
+    // Google's API for  location services. The majority of the app functions using this class.
+    FusedLocationProviderClient fusedLocationProviderClient;
+    private LocationCallback locationCallback;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         latTextView = findViewById(R.id.latitude);
         longTextView = findViewById(R.id.longitude);
         btnCheckIn = findViewById(R.id.btnCheckIn);
         btnCheckIn.setOnClickListener(onClickCheckIn());
         bd = BancoDados.getInstance();
+        //FusedLocation
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        locationCallback = new LocationCallback() {
+                       @Override
+            public void onLocationResult(@NonNull LocationResult locationResult) {
+                           Location location = locationResult.getLastLocation();
+                            updateLocationOnView(location);
+                       }
+        };
+        locationRequest = new LocationRequest.Builder(30000).build();
         criaCategorias();
         criaLocaisVisitados();
-
-        criteria = new Criteria();
-        PackageManager packageManager = getPackageManager();
-        boolean hasGPS = packageManager.hasSystemFeature(PackageManager.FEATURE_LOCATION_GPS);
-        if(hasGPS){
-            criteria.setAccuracy(Criteria.ACCURACY_FINE);
-        }else{
-            criteria.setAccuracy(Criteria.ACCURACY_COARSE);
-        }
     }
     private void criaLocaisVisitados(){
         locaisVisitados = new HashSet<>();
-        //,"qtdVisitadas","latitude","longitude"
         Cursor c = bd.buscar("Checkin",new String[]{"Local","qtdVisitas","cat","latitude","longitude"},"","");
 
         while(c.moveToNext()){
@@ -111,22 +120,34 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     protected void onStart() {
         super.onStart();
         requestLocationPermission();
-        provider = lm.getBestProvider(criteria,true);
-        if(provider != null){
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                return;
-            }
-            lm.requestLocationUpdates(provider,5000,0,this);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
         }
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest,
+                locationCallback,
+                Looper.getMainLooper());
     }
+    private void startLocationUpdates() {
 
+    }
+    private void updateLocationOnView(Location location){
+        currentLocation = location;
+        double latitude = location.getLatitude();
+        double longitude = location.getLongitude();
+
+        DecimalFormat df = new DecimalFormat("0.#######");
+        latTextView.setText(df.format(latitude));
+        longTextView.setText(df.format(longitude));
+
+        Log.i("LOCATION","Latitude: "+latitude+" Longitude: "+longitude);
+    }
     @Override
     protected void onResume() {
         super.onResume();
@@ -229,14 +250,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     @Override
     public void onLocationChanged(@NonNull Location location) {
         currentLocation = location;
-        double latitude = location.getLatitude();
-        double longitude = location.getLongitude();
-
-        DecimalFormat df = new DecimalFormat("0.#######");
-        latTextView.setText(df.format(latitude));
-        longTextView.setText(df.format(longitude));
-
-        Log.i("LOCATION","Latitude: "+latitude+" Longitude: "+longitude);
+        Log.i("LOCATION","De antes!");
     }
 
     @Override
@@ -275,8 +289,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+    }
+
+    @Override
     protected void onDestroy() {
-        lm.removeUpdates(this);
         super.onDestroy();
     }
 }

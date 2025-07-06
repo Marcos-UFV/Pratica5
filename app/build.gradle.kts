@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "br.ufv.dpi.inf311.pratica5"
-        minSdk = 21
+        minSdk = 27
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -39,6 +39,7 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation(libs.google.maps)
+    implementation(libs.google.location)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
