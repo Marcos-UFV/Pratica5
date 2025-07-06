@@ -5,6 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".GestaoActivity">
 
     <com.google.android.material.textview.MaterialTextView
@@ -15,9 +16,8 @@
         android:textColor="@color/black"
         android:textSize="16sp"
         android:textStyle="bold" />
-    <fragment
-        android:id="@+id/gestaoFragment"
-        class="br.ufv.dpi.inf311.pratica5.view.LocalFragment"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycleView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 </LinearLayout>

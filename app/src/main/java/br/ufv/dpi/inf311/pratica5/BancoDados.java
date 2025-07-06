@@ -64,6 +64,13 @@ public class BancoDados {
         Log.i("BANCO_DADOS", "Atualizou [" + count + "] registros");
         return count;
     }
+
+    public int deletar(String tabela, String[] where) {
+        int count = db.delete(tabela, "Local = ?", where);
+        Log.i("BANCO_DADOS", "Deletou [" + count + "] registros");
+        return count;
+    }
+
     public void abrir() {
         Context ctx = MyApp.getAppContext();
         db = ctx.openOrCreateDatabase(NOME_BANCO, Context.MODE_PRIVATE, null);

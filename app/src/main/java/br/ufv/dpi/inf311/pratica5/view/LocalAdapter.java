@@ -1,6 +1,8 @@
 package br.ufv.dpi.inf311.pratica5.view;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
+import br.ufv.dpi.inf311.pratica5.BancoDados;
 import br.ufv.dpi.inf311.pratica5.R;
 import br.ufv.dpi.inf311.pratica5.model.Local;
 
@@ -20,15 +23,16 @@ public class LocalAdapter extends RecyclerView.Adapter<LocalAdapter.LocalViewHol
     private final List<Local> locais;
     private final Context context;
     private LocalOnClickListener localOnClickListener;
-
+    private BancoDados bd;
     public LocalAdapter(List<Local> locais, Context context, LocalOnClickListener localOnClickListener) {
         this.locais = locais;
         this.context = context;
         this.localOnClickListener = localOnClickListener;
+        bd = BancoDados.getInstance();
     }
 
     public interface LocalOnClickListener{
-        public void onClickLocal(View view,int idx);
+        void onClickLocal(View view,int idx);
     }
     @NonNull
     @Override
@@ -49,6 +53,7 @@ public class LocalAdapter extends RecyclerView.Adapter<LocalAdapter.LocalViewHol
                 }
             });
         }
+
     }
 
     @Override
@@ -56,12 +61,38 @@ public class LocalAdapter extends RecyclerView.Adapter<LocalAdapter.LocalViewHol
         return locais!= null?locais.size():0;
     }
 
-    public static class LocalViewHolder extends RecyclerView.ViewHolder{
+    public class LocalViewHolder extends RecyclerView.ViewHolder{
         public TextView tNome;
-        ImageView img;
         public LocalViewHolder(@NonNull View itemView) {
             super(itemView);
             tNome = itemView.findViewById(R.id.nome);
+            itemView.findViewById(R.id.imageView).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            switch (i){
+                                case DialogInterface.BUTTON_POSITIVE:
+                                    Local local = locais.get(getAdapterPosition());
+                                    int deleted = bd.deletar("Checkin", new String[]{local.getNome()});
+                                    if(deleted > 0){
+                                        locais.remove(getAdapterPosition());
+                                        notifyItemRemoved(getAdapterPosition());
+                                    }
+                                    break;
+                                case DialogInterface.BUTTON_NEGATIVE:
+                                    break;
+                            }
+                        }
+                    };
+                    AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
+                    builder.setMessage("Deletar esse registro?");
+                    builder.setPositiveButton("Sim",dialogClickListener);
+                    builder.setNegativeButton("Não",dialogClickListener);
+                    builder.show();
+                }
+            });
         }
     }
 }
